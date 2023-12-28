@@ -11,9 +11,13 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+# from corsheaders.defaults import default_headers
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -25,7 +29,7 @@ SECRET_KEY = 'django-insecure-0c7-99#$v&5$at8g)3n(@vybo-9*ggcsv88&2p$jb(o2d5(*fz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['django-deploy-first.df.r.appspot.com','127.0.0.1','localhost']
 
 
 # Application definition
@@ -39,9 +43,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'core.apps.CoreConfig',
+    'posts.apps.PostsConfig',
     'corsheaders',
     'rest_framework',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -59,7 +65,7 @@ ROOT_URLCONF = 's_auth_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR,"build")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -86,6 +92,20 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+# DATABASES = {
+# 	'default': {
+# 		'ENGINE': 'django.db.backends.mysql',
+# 		'NAME': 'dj-app-db-test',
+# 		'USER': 'fatima',
+# 		'PASSWORD': '@b_cY"omaA"dF5M,',
+# 		'HOST':'/cloudsql/django-deploy-first:asia-east2:django-post-app-test',
+# 		# 'HOST':'127.0.0.1',
+# 		'PORT':'3306',
+# 	}
+# }
+
 
 
 # Password validation
@@ -123,6 +143,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR,'build/static')
+]
+STATIC_ROOT = os.path.join(BASE_DIR,'static')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -132,7 +157,29 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL  = "core.UserAccount"
 
+# cors 
 CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:5000',
-    'http://localhost:5000',
+    'https://dapper-torrone-11efbe.netlify.app',
+    'http://localhost:5000',  # Add your frontend URL here
+    'http://127.0.0.1:5000',  # Add your frontend URL here
+    # Other allowed origins if needed
 ]
+
+
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000','http://127.0.0.1:5000']
+
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Optional: Allow credentials (cookies, authorization headers)
+CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_HTTPONLY = False
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES':[
+        'rest_framework.permissions.IsAuthenticated'
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES':[
+        'rest_framework.authentication.SessionAuthentication'
+    ]
+}

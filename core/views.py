@@ -6,6 +6,8 @@ from django.views.decorators.csrf import csrf_protect,ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.contrib.auth import authenticate,login,logout
 from django.middleware.csrf import get_token
+from .serializers import UserSerializer
+from rest_framework.permissions import IsAuthenticated,AllowAny
 
 
 
@@ -13,14 +15,16 @@ User = get_user_model()
 
 @method_decorator(csrf_protect,name="dispatch")
 class IsAuthenticated(APIView):
+    permission_classes = [AllowAny]
     def get(self,request,format=None):
-        if User.is_authenticated:
-            return Response({"success":"User is Authenticated"})
+        if self.request.user.is_authenticated:
+            return Response({"success":"User is Authenticated","id":self.request.user.id,"email":self.request.user.email})
         else:
             return Response({"error":"User not Authenticated"})
 
 @method_decorator(csrf_protect,name="dispatch")
 class UserRegister(APIView):
+    permission_classes = [AllowAny]
 
     def post(self,request,format=None):
         data = self.request.data 
@@ -41,7 +45,9 @@ class UserRegister(APIView):
                 if(len(password)<8):
                     return Response({"error":"Password should minimum of 8 characters"})
                 else:
-                    user = User.objects.create(email = email,username=username,password=password)
+                    user = User.objects.create(email = email,username=username)
+                    user.set_password(password)
+                    user.is_active = True
                     user.save()
                     return Response({"success":"User Created successfully"})
         else:
@@ -50,22 +56,29 @@ class UserRegister(APIView):
 
 @method_decorator(ensure_csrf_cookie,name="dispatch")
 class GetCSRFToken(APIView):
+    permission_classes = [AllowAny]
+
     def get(self,request,format=None):
         return Response({"success":"CSRF cookie Set"})
 
 
 @method_decorator(csrf_protect,name="dispatch")
 class UserLogin(APIView):
+    permission_classes = [AllowAny]
+    
     def post(self,request,format=None):
         data = self.request.data
         email = data['email']
         password = data['password']
+        print(data)
 
         user = authenticate(self.request,email=email,password=password)
+
+        print(user)
         
         if user is not None:
             login(self.request,user)
-            return Response({"success":"Logged in Successfully!"})
+            return Response({"success":"Logged in Successfully!","id":user.id,"email":user.email})
         else:
             return Response({"error":"Invalid login credentials."})
 
@@ -78,3 +91,11 @@ class UserLogout(APIView):
             return Response({"success":"User Logged Out Successfully!"})
         except:
             return Response({"error":"Something went wrong when logging out"})
+        
+
+class GetAllUsers(APIView):
+    permission_classes = [AllowAny]
+    def get(self,request,format=None):
+        users = User.objects.all()
+        serializer = UserSerializer(users,many=True)
+        return Response(serializer.data)

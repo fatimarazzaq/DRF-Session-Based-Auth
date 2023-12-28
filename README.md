@@ -17,11 +17,3 @@ The project implements user authentication through the following steps:
 - User Logout: Allows users to terminate their active sessions.
 - Protected Routes: Certain routes are restricted to authenticated users only.
 
-## Installation
-
-### Backend (Django Rest Framework)
-
-1. Clone the backend repository:
-   ```bash
-   git clone <backend_repository_url>
-   cd <backend_directory>
